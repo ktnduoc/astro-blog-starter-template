@@ -1,8 +1,20 @@
 {
 	"name": "astro-blog-starter-template",
-	"compatibility_date": "2025-10-08",
+	"compatibility_date": "2026-03-29",
 	"compatibility_flags": ["nodejs_compat"],
-	"main": "./dist/_worker.js/index.js",
+	"main": "./src/worker.ts",
+	"d1_databases": [
+		{
+			"binding": "DB",
+			"database_name": "astro-blog-starter-template"
+		}
+	],
+	"r2_buckets": [
+		{
+			"binding": "MEDIA",
+			"bucket_name": "astro-blog-starter-media"
+		}
+	],
 	"assets": {
 		"directory": "./dist",
 		"binding": "ASSETS"
