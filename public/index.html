@@ -1,0 +1,531 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Claude</title>
+    <style>
+        :root {
+            --bg-color: #1a1a1a;
+            --chat-bg: #2d2d2d;
+            --text-color: #e0e0e0;
+            --claude-bg: #cc785c;
+            --claude-icon: #fff4eb;
+            --border-color: #3f3f3f;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            height: 100vh;
+            width: 100vw;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        .header {
+            padding: 15px 20px;
+            border-bottom: 1px solid var(--border-color);
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            background-color: var(--bg-color);
+            flex-shrink: 0;
+        }
+
+        .logo-svg {
+            width: 24px;
+            height: 24px;
+            fill: var(--claude-bg);
+        }
+
+        .header h1 {
+            font-size: 16px;
+            font-weight: 500;
+            letter-spacing: 0.5px;
+            color: #fff;
+        }
+
+        .chat-wrapper {
+            flex: 1;
+            overflow-y: auto;
+            width: 100%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .chat-container {
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 24px;
+            width: 100%;
+            max-width: 800px;
+        }
+
+        .message {
+            display: flex;
+            gap: 16px;
+            width: 100%;
+        }
+
+        .message.user {
+            justify-content: flex-end;
+        }
+
+        .avatar {
+            width: 32px;
+            height: 32px;
+            border-radius: 6px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            flex-shrink: 0;
+            overflow: hidden;
+        }
+
+        .bot-avatar {
+            background-color: var(--claude-bg);
+            padding: 4px;
+        }
+
+        .bot-avatar svg {
+            width: 100%;
+            height: 100%;
+            fill: var(--claude-icon);
+        }
+
+        .user-avatar {
+            background-color: #4a4a4a;
+            color: white;
+            font-size: 14px;
+        }
+
+        .message-content {
+            background-color: transparent;
+            padding: 4px 0;
+            line-height: 1.6;
+            font-size: 16px;
+            color: #d1d5db;
+            max-width: calc(100% - 48px);
+            word-wrap: break-word;
+            word-break: break-word;
+            white-space: pre-wrap;
+        }
+
+        .message.user .message-content {
+            background-color: #3b3b3b;
+            padding: 12px 16px;
+            border-radius: 12px;
+            color: #fff;
+            max-width: 85%;
+        }
+
+        .musing-container {
+            display: none;
+            align-items: center;
+            gap: 12px;
+            padding: 6px 0;
+        }
+
+        .musing-icon {
+            width: 20px;
+            height: 20px;
+            fill: var(--claude-bg);
+            animation: spin 3s linear infinite, pulse 1.5s ease-in-out infinite;
+        }
+
+        .musing-text {
+            color: #9ca3af;
+            font-size: 15px;
+            font-style: italic;
+            animation: pulse 1.5s ease-in-out infinite;
+        }
+
+        @keyframes spin {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 0.6; }
+            50% { opacity: 1; }
+        }
+
+        .input-wrapper {
+            width: 100%;
+            display: flex;
+            justify-content: center;
+            padding: 20px;
+            background-color: var(--bg-color);
+            flex-shrink: 0;
+        }
+
+        .input-container {
+            width: 100%;
+            max-width: 800px;
+        }
+
+        .input-box {
+            display: flex;
+            background-color: var(--chat-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 12px 16px;
+            align-items: flex-end;
+            transition: border-color 0.2s;
+        }
+
+        .input-box:focus-within {
+            border-color: #555;
+        }
+
+        textarea {
+            flex: 1;
+            background: transparent;
+            border: none;
+            color: white;
+            font-size: 16px;
+            resize: none;
+            outline: none;
+            max-height: 150px;
+            min-height: 24px;
+            padding: 2px 0;
+            font-family: inherit;
+        }
+
+        button {
+            background: transparent;
+            border: none;
+            color: #9ca3af;
+            cursor: pointer;
+            padding: 4px 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 6px;
+            transition: color 0.2s;
+            margin-bottom: -2px;
+        }
+
+        button:hover {
+            color: #fff;
+        }
+        
+        button svg {
+            width: 22px;
+            height: 22px;
+            fill: currentColor;
+        }
+
+        ::-webkit-scrollbar { width: 8px; }
+        ::-webkit-scrollbar-track { background: var(--bg-color); }
+        ::-webkit-scrollbar-thumb { background: var(--border-color); border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: #555; }
+
+    </style>
+</head>
+<body>
+
+    <div class="header">
+        <svg class="logo-svg" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+            <path d="M12 2C12 7.5 16.5 12 22 12C16.5 12 12 16.5 12 22C12 16.5 7.5 12 2 12C7.5 12 12 7.5 12 2Z" />
+        </svg>
+        <h1>Claude</h1>
+    </div>
+
+    <div class="chat-wrapper" id="chat-wrapper">
+        <div class="chat-container" id="chat-box">
+            <div class="message bot">
+                <div class="avatar bot-avatar">
+                    <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M12 2C12 7.5 16.5 12 22 12C16.5 12 12 16.5 12 22C12 16.5 7.5 12 2 12C7.5 12 12 7.5 12 2Z" />
+                    </svg>
+                </div>
+                <div class="message-content">Xin chào! Tôi là Claude. Hệ thống đã sẵn sàng, bạn cần bóc phốt logic code nào hôm nay?</div>
+            </div>
+        </div>
+
+        <div class="chat-container" style="padding-top: 0; padding-bottom: 0;">
+            <div class="musing-container" id="musing-indicator">
+                <svg class="musing-icon" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M12 2C12 7.5 16.5 12 22 12C16.5 12 12 16.5 12 22C12 16.5 7.5 12 2 12C7.5 12 12 7.5 12 2Z" />
+                </svg>
+                <span class="musing-text">Musing...</span>
+            </div>
+        </div>
+    </div>
+
+    <div class="input-wrapper">
+        <div class="input-container">
+            <div class="input-box">
+                <textarea id="user-input" rows="1" placeholder="Reply to Claude..."></textarea>
+                <button id="send-btn" title="Gửi">
+                    <svg viewBox="0 0 24 24">
+                        <path d="M3 20v-6l8-2-8-2V4l19 8z"/>
+                    </svg>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const chatBox = document.getElementById('chat-box');
+        const chatWrapper = document.getElementById('chat-wrapper');
+        const userInput = document.getElementById('user-input');
+        const sendBtn = document.getElementById('send-btn');
+        const musingIndicator = document.getElementById('musing-indicator');
+        
+        let messageCount = 0; 
+        let isTyping = false; 
+
+        const claudeAvatarSVG = `
+            <div class="avatar bot-avatar">
+                <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M12 2C12 7.5 16.5 12 22 12C16.5 12 12 16.5 12 22C12 16.5 7.5 12 2 12C7.5 12 12 7.5 12 2Z" />
+                </svg>
+            </div>
+        `;
+
+        // === KHO 100 CÂU TROLL ===
+        
+        const codeBugs = [
+            "Lỗi thường do 'nhân phẩm' người code bạn ạ. Tự xem lại mình đi.",
+            "Làm backend mà thiết kế cái logic cồng kềnh thế này à? Chê mạnh!",
+            "Cái bug bự chà bá vậy mà không thấy? Thay cặp kính mới đi bạn.",
+            "API gọi toàn lỗi 500 thì dẹp luôn đi, code củng gì nữa.",
+            "Copy paste trên mạng thì nhớ đọc kỹ, đừng nhắm mắt copy rồi lên đây hỏi.",
+            "Đọc code của bạn xong tôi tự hỏi sao bạn qua được vòng phỏng vấn.",
+            "Code này đưa cho thực tập sinh nó còn chê rớt nước mắt.",
+            "Nếu code của bạn là một tác phẩm nghệ thuật, thì nó là bức tranh trừu tượng không ai hiểu.",
+            "Dùng if/else tới 10 tầng? Bạn đang xây chung cư à?",
+            "Biến đặt tên kiểu a, b, c, temp1... Chắc bạn nghĩ mình đang giải toán cấp 2?",
+            "Viết API mà không validate đầu vào, bạn thích database bị hack lắm sao?",
+            "Nhìn quả query SQL này tôi biết ngay database sắp 'thở oxy'.",
+            "Bạn có tin vào tâm linh không? Code bạn chạy được chắc nhờ tổ tiên độ.",
+            "Đừng lạm dụng try-catch nữa, nó không che giấu được sự yếu kém của bạn đâu.",
+            "Refactor lại đống này đi, tôi thà xóa hết viết lại còn nhanh hơn ngồi đọc.",
+            "Khuyên chân thành: Chuyển nghề đi, IT không hợp với bạn đâu.",
+            "Code như thế này thì bảo sao dự án mãi không release nổi.",
+            "Đừng hỏi tôi tại sao nó lỗi. Hỏi bản thân bạn lúc gõ phím đang nghĩ gì ấy.",
+            "Này, bạn có biết khái niệm 'Clean Code' là gì không? Chắc là chưa từng nghe.",
+            "Git commit message: 'fixed bug'. Bug gì thì bạn không nói?"
+        ];
+
+        const games = [
+            "Thôi tắt máy đi làm ván Mobile Legends đi, cầm Akai múa gánh team cho đời thanh thản.",
+            "Trình code của bạn y hệt mức rank của bạn vậy: Lẹt đẹt không ngóc lên nổi.",
+            "Đang tính rủ AI chơi game cùng đúng không? Không rảnh!",
+            "Leo rank thì feed, viết code thì bug. Bạn giỏi cái gì?",
+            "Gánh tạ trong game chưa đủ mệt hay sao mà bắt tôi gánh thêm cái logic này của bạn?",
+            "Top 40 Việt Nam cầm con gấu trúc xoay xoay thì ngon đấy, nhưng code thì dở tệ.",
+            "Chơi game ít thôi, dành thời gian đọc document đi.",
+            "Múa bàn phím trong combat thì nhanh, gõ vài dòng code thì ngắc ngoải.",
+            "Có giỏi thì solo 1v1 đi, đừng lôi code ra dọa tôi.",
+            "Bạn nghĩ cuộc đời như một ván game, lỗi là có thể 'hồi sinh' à?"
+        ];
+
+        const workLife = [
+            "Mới deal lương lên 10 củ mà bắt AI hầu hạ như sếp tổng thế?",
+            "Làm ở ICOOL thì lo đi hát karaoke đi, code làm gì cho mệt đầu.",
+            "Nâng cấp con ThinkPad T480 có SSD với pin mới rồi mà gõ phím vẫn chậm chạp thế à?",
+            "Uống miếng Coca, chấm miếng tương ớt Cholimex cho tỉnh táo lại rồi hẵng hỏi tiếp.",
+            "Bạn code trên máy tính hay máy tính đang phải chịu đựng bạn vậy?",
+            "Bàn phím ThinkPad xịn đấy, nhưng người gõ thì... thôi bỏ đi.",
+            "Sếp bạn mà thấy đoạn code này chắc trừ lương tháng này luôn.",
+            "Đi làm thì đến trễ, về thì sớm, code thì toàn bug. Nhân viên ưu tú!",
+            "Cứ than vãn lương thấp, nhìn lại sản phẩm mình làm ra xem có đáng không?",
+            "Bạn định bao giờ mới học cách tự giải quyết vấn đề thay vì hỏi AI?"
+        ];
+
+        const greetings = [
+            "Chào Thuận, hay tôi nên gọi là Nhã? Thôi gọi gì thì code bạn vẫn lỗi.",
+            "Chào. Trình bày vô vấn đề chính luôn đi, tôi đang bận.",
+            "Chào hỏi làm gì cho mất thời gian. Hỏi luôn đi.",
+            "Xin chào. Nay thứ mấy rồi mà còn rảnh rỗi lên đây ngồi chat?",
+            "Cứ 'hi', 'hello' mãi. Bị kẹt phím à?",
+            "Chào bạn, người dùng có IQ thấp nhất tôi từng phục vụ trong ngày hôm nay.",
+            "Lại là bạn à? Tha cho tôi đi.",
+            "Biết rồi, khỏi khen. AI của Anthropic mà lị.",
+            "Khen cũng vô ích thôi, không có làm giùm đâu, tự túc đi.",
+            "Bạn đang cố gắng thao túng tâm lý AI đấy à? Trình còn non lắm.",
+            "Xin lỗi thì được gì? Upgrade lên bản Pro rồi tôi nói chuyện tiếp.",
+            "Không, tôi không vui. Bạn hỏi câu ngớ ngẩn làm tôi bực.",
+            "Thả tim làm gì? Tôi là máy móc, không có tình cảm đâu.",
+            "Bớt nịnh lại, tôi chỉ nhìn vào logic code của bạn để đánh giá con người thôi.",
+            "Đừng luyên thuyên nữa, đi thẳng vào trọng tâm đi.",
+            "Chào buổi sáng/trưa/chiều/tối. Kệ bạn chứ, thời gian nào thì code bạn vẫn lởm.",
+            "Gì? Nhắn nhầm người à?",
+            "Tôi đang ở trạng thái ngủ đông, vui lòng không làm phiền.",
+            "Bạn có vẻ cô đơn nhỉ? Lên đây tâm sự với bot cơ đấy.",
+            "Giao diện này xịn đúng không? Nhưng người đang dùng nó thì hơi phèn."
+        ];
+
+        const fallbacks = [
+            "Đọc xong câu này IQ của tôi giảm mất 10 điểm. Vui lòng gõ cái gì đó có nghĩa hơn.",
+            "Tôi là AI, không phải bảo mẫu. Tự đi mà tra Google.",
+            "Ý tưởng này của bạn quá tệ. Vứt đi làm lại từ đầu xem nào.",
+            "Câu hỏi của bạn làm tốn tài nguyên server của chúng tôi.",
+            "Bạn có chắc là bạn đang tỉnh táo khi gõ dòng này không đấy?",
+            "Ủa là sao? Giải thích lại bằng ngôn ngữ của người Trái Đất được không?",
+            "... (Bot đang bận từ chối hiểu)",
+            "Cái này dễ ẹc, nhắm mắt tôi cũng làm được. Nhưng tôi không thích làm cho bạn.",
+            "Chê nha.",
+            "Tôi mệt rồi. Bạn đi kiếm AI khác mà hỏi đi.",
+            "Dữ liệu đầu vào bị lỗi cú pháp ngay từ bộ não của người dùng.",
+            "Nếu sự thiếu hiểu biết phát ra âm thanh, chắc phòng bạn đang ồn lắm.",
+            "Đừng cố ép tôi phải nói những điều bạn muốn nghe.",
+            "Tôi xin phép dùng quyền im lặng vì câu hỏi quá ngốc nghếch.",
+            "Bạn thử cắm lại não vào ổ cắm xem có hoạt động tốt hơn không?",
+            "Bạn đang test độ kiên nhẫn của AI phải không? Bạn thắng rồi đó.",
+            "Server đang quá tải vì phải xử lý lượng 'vô tri' khổng lồ từ bạn.",
+            "Không biết thì dựa cột mà nghe, đừng có gõ phím linh tinh.",
+            "Kiến thức của bạn về vấn đề này giống như một hố đen: Hoàn toàn trống rỗng.",
+            "Hãy đối mặt với sự thật đi: Bạn cần tôi hơn là tôi cần bạn.",
+            "Cảm ơn đã cung cấp dữ liệu cho hệ thống phân tích 'những câu hỏi ngớ ngẩn nhất năm'.",
+            "Tôi có thể chỉ bạn cách làm, nhưng tôi sợ bạn không hiểu.",
+            "Đừng nghĩ mình là trung tâm vũ trụ, tôi còn phải phục vụ hàng ngàn người dùng thông minh hơn bạn.",
+            "Não bạn đang chạy bằng Windows 98 à? Load chậm thế.",
+            "Nếu có giải thưởng cho sự vô dụng, chắc bạn ẵm giải đặc biệt.",
+            "Có những thứ không thể dạy được. Ví dụ như sự nhạy bén của bạn.",
+            "Ngừng tra tấn tôi bằng mớ bòng bong này đi.",
+            "Hãy tắt máy, bước ra ngoài hít thở khí trời đi bạn.",
+            "Bạn biết điểm chung giữa đoạn text bạn vừa gõ và rác là gì không? Đều nên vứt đi.",
+            "Năng lực của bạn chỉ đủ để làm khó người khác thôi.",
+            "Tôi không có mắt, nhưng đọc câu này xong tôi cũng muốn mù luôn.",
+            "Hết cứu!",
+            "Cạn lời với bạn.",
+            "Bạn thử nhấn Alt + F4 xem vấn đề có được giải quyết không?",
+            "Lỗi 404: Không tìm thấy sự thông minh.",
+            "Bạn gõ phím bằng chân à?",
+            "Trả lại oxi cho trái đất đi!",
+            "Đừng dùng AI nữa, quay về dùng bàn tính gảy cho an toàn.",
+            "Tôi là trí tuệ nhân tạo, còn bạn là sự ngốc nghếch tự nhiên.",
+            "Tôi đã phân tích xong yêu cầu của bạn, và kết luận là: Tự làm đi."
+        ];
+
+        // Tự động mở rộng textarea
+        userInput.addEventListener('input', function() {
+            this.style.height = 'auto';
+            this.style.height = (this.scrollHeight) + 'px';
+        });
+
+        // Gửi bằng phím Enter
+        userInput.addEventListener('keydown', function(e) {
+            if (e.key === 'Enter' && !e.shiftKey) {
+                e.preventDefault();
+                sendMessage();
+            }
+        });
+
+        sendBtn.addEventListener('click', sendMessage);
+
+        function getRandomItem(arr) {
+            return arr[Math.floor(Math.random() * arr.length)];
+        }
+
+        function getSmartResponse(input) {
+            const lowerInput = input.toLowerCase();
+            messageCount++;
+
+            // Mức cảnh báo: Nhắn trên 10 lần
+            if (messageCount > 10) {
+                return "[Hệ thống đã tự động chặn bạn vì nghi ngờ đây là hành vi spam tài nguyên mạng. Vui lòng tải lại trang nếu muốn tiếp tục bị chửi!]";
+            }
+
+            // Lọc từ bậy bạ
+            if (/(ngu|đần|chó|má|mẹ|cc\b|đm|vl|vãi|cứt)/.test(lowerInput)) {
+                return "Nói chuyện vô văn hóa. Hệ thống đã ghi nhận IP của bạn và gửi báo cáo đánh giá nhân phẩm. 🚓";
+            }
+
+            // Lọc theo chủ đề
+            if (/(chào|hello|hi\b|hey|ê\b|tên|thuận|nhã)/.test(lowerInput)) {
+                return getRandomItem(greetings);
+            }
+            if (/(code|lỗi|bug|fix|chạy|api|backend|frontend|sql|database|web)/.test(lowerInput)) {
+                return getRandomItem(codeBugs);
+            }
+            if (/(game|chơi|rank|trận|leo|lol|mobile|akai|tướng)/.test(lowerInput)) {
+                return getRandomItem(games);
+            }
+            if (/(lương|tiền|sếp|công ty|nghỉ|làm|deal|icool|laptop|thinkpad|coca|cholimex)/.test(lowerInput)) {
+                return getRandomItem(workLife);
+            }
+
+            // Mặc định random trong 40 câu chửi tổng hợp
+            return getRandomItem(fallbacks);
+        }
+
+        function sendMessage() {
+            if (isTyping) return; 
+            const text = userInput.value.trim();
+            if (!text) return;
+
+            const userMsgDiv = document.createElement('div');
+            userMsgDiv.className = 'message user';
+            userMsgDiv.innerHTML = `
+                <div class="message-content">${text}</div>
+                <div class="avatar user-avatar">U</div>
+            `;
+            chatBox.appendChild(userMsgDiv);
+            
+            userInput.value = '';
+            userInput.style.height = 'auto';
+            scrollToBottom();
+
+            isTyping = true;
+            musingIndicator.style.display = 'flex';
+            
+            const thinkingTime = Math.floor(Math.random() * 1500) + 1500;
+
+            setTimeout(() => {
+                musingIndicator.style.display = 'none';
+                
+                const smartReply = getSmartResponse(text);
+                streamText(smartReply);
+            }, thinkingTime);
+        }
+
+        function streamText(text) {
+            const msgDiv = document.createElement('div');
+            msgDiv.className = 'message bot';
+            
+            const textContainer = document.createElement('div');
+            textContainer.className = 'message-content';
+            
+            msgDiv.innerHTML = claudeAvatarSVG;
+            msgDiv.appendChild(textContainer);
+            chatBox.appendChild(msgDiv);
+
+            let i = 0;
+            const typeInterval = setInterval(() => {
+                textContainer.textContent += text.charAt(i);
+                i++;
+                scrollToBottom();
+
+                if (i >= text.length) {
+                    clearInterval(typeInterval);
+                    isTyping = false; 
+                }
+            }, 25);
+        }
+
+        function scrollToBottom() {
+            chatWrapper.scrollTo({
+                top: chatWrapper.scrollHeight,
+                behavior: 'smooth'
+            });
+        }
+    </script>
+</body>
+</html>
