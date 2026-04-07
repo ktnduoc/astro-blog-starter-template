@@ -6,7 +6,8 @@
 	"d1_databases": [
 		{
 			"binding": "DB",
-			"database_name": "astro-blog-starter-template"
+			"database_name": "astro-blog-starter-template",
+			"database_id": "5721d98b-7aa3-4fb0-abeb-cc38b3e38c6d"
 		}
 	],
 	"r2_buckets": [
