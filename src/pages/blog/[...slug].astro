@@ -1,5 +1,5 @@
 ---
-import { getEmDashEntry } from 'emdash';
+import { getEmDashEntry, type MediaValue } from 'emdash';
 import { PortableText } from 'emdash/ui';
 import BlogPost from '../../layouts/BlogPost.astro';
 
@@ -14,6 +14,14 @@ const { entry: post } = await getEmDashEntry('posts', slug);
 if (!post) {
 	return Astro.redirect('/404');
 }
+
+function getMediaSrc(image: MediaValue | null | undefined): string | undefined {
+	if (!image) return undefined;
+	if (image.src) return image.src;
+	return `/_emdash/api/media/file/${image.id}`;
+}
+
+const featuredImage = post.data.featured_image as MediaValue | null | undefined;
 ---
 
 <BlogPost
@@ -21,7 +29,7 @@ if (!post) {
 	description={post.data.excerpt ?? ''}
 	pubDate={post.data.publishedAt ?? new Date()}
 	updatedDate={post.data.updatedAt}
-	heroImage={post.data.featured_image ? `/_emdash/api/media/file/${(post.data.featured_image as any)?.id ?? ''}` : undefined}
+	heroImage={getMediaSrc(featuredImage)}
 >
 	<PortableText value={post.data.content} />
 </BlogPost>
