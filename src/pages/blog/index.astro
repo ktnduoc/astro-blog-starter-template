@@ -3,12 +3,18 @@ import BaseHead from '../../components/BaseHead.astro';
 import Header from '../../components/Header.astro';
 import Footer from '../../components/Footer.astro';
 import { SITE_TITLE, SITE_DESCRIPTION } from '../../consts';
-import { getCollection } from 'astro:content';
+import { getEmDashCollection, type MediaValue } from 'emdash';
 import FormattedDate from '../../components/FormattedDate.astro';
 
-const posts = (await getCollection('blog')).sort(
-	(a, b) => b.data.pubDate.valueOf() - a.data.pubDate.valueOf(),
-);
+const { entries: posts } = await getEmDashCollection('posts', {
+	orderBy: { published_at: 'desc' },
+});
+
+function getMediaSrc(image: MediaValue | null | undefined): string | undefined {
+	if (!image) return undefined;
+	if (image.src) return image.src;
+	return `/_emdash/api/media/file/${image.id}`;
+}
 ---
 
 <!doctype html>
@@ -94,10 +100,12 @@ const posts = (await getCollection('blog')).sort(
 						posts.map((post) => (
 							<li>
 								<a href={`/blog/${post.id}/`}>
-									<img width={720} height={360} src={post.data.heroImage} alt="" />
+									{post.data.featured_image && (
+										<img width={720} height={360} src={getMediaSrc(post.data.featured_image as MediaValue)} alt={post.data.title} />
+									)}
 									<h4 class="title">{post.data.title}</h4>
 									<p class="date">
-										<FormattedDate date={post.data.pubDate} />
+										{post.data.publishedAt && <FormattedDate date={post.data.publishedAt} />}
 									</p>
 								</a>
 							</li>

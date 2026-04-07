@@ -1,21 +1,35 @@
 ---
-import { type CollectionEntry, getCollection } from 'astro:content';
+import { getEmDashEntry, type MediaValue } from 'emdash';
+import { PortableText } from 'emdash/ui';
 import BlogPost from '../../layouts/BlogPost.astro';
-import { render } from 'astro:content';
 
-export async function getStaticPaths() {
-	const posts = await getCollection('blog');
-	return posts.map((post) => ({
-		params: { slug: post.id },
-		props: post,
-	}));
+const { slug } = Astro.params;
+
+if (!slug) {
+	return Astro.redirect('/404');
 }
-type Props = CollectionEntry<'blog'>;
 
-const post = Astro.props;
-const { Content } = await render(post);
+const { entry: post } = await getEmDashEntry('posts', slug);
+
+if (!post) {
+	return Astro.redirect('/404');
+}
+
+function getMediaSrc(image: MediaValue | null | undefined): string | undefined {
+	if (!image) return undefined;
+	if (image.src) return image.src;
+	return `/_emdash/api/media/file/${image.id}`;
+}
+
+const featuredImage = post.data.featured_image as MediaValue | null | undefined;
 ---
 
-<BlogPost {...post.data}>
-	<Content />
+<BlogPost
+	title={post.data.title}
+	description={post.data.excerpt ?? ''}
+	pubDate={post.data.publishedAt ?? new Date()}
+	updatedDate={post.data.updatedAt}
+	heroImage={getMediaSrc(featuredImage)}
+>
+	<PortableText value={post.data.content} />
 </BlogPost>
